@@ -1,6 +1,20 @@
 name: RecipeBot
 channels:
   - defaults
+  - conda-forge
+  - pytorch
 dependencies:
-  - python=3.12.2
+  - python=3.10.0
   - requests
+  - langchain
+  - pip
+  - pytorch
+  - faiss-cpu
+  - torchvision 
+  - pytorch
+  - pip:
+    - transformers==4.15.0  
+    - jq
+    - llama-index
+    - llama-index-llms-ollama
+    - llama-index-embeddings-huggingface
