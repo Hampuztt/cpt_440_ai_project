@@ -2,6 +2,8 @@ import os
 import requests
 import zipfile
 from langchain_community.document_loaders.json_loader import JSONLoader
+from langchain_community.vectorstores import FAISS
+from langchain_community.embeddings import OllamaEmbeddings
 from typing import List
 import json
 
@@ -210,7 +212,7 @@ def get_paragraphs() -> List[str]:
     print("Number of documents (recipes):", len(documents))
     paragraphs = []
     with open("recipe_paragraphs.txt", mode="wt") as file:
-        for doc in documents:
+        for doc_i, doc in enumerate(documents):
             # Access 'page_contents' which contains the needed information as a JSON string
             page_contents = doc.page_content
             if isinstance(page_contents, str):
@@ -229,8 +231,9 @@ def get_paragraphs() -> List[str]:
                 paragraph += f"The {ordinal_word(i+1)} step is: {step['step_title'].lower()}. {step['instructions']}\n\n"
             paragraph += "\n"
             paragraphs.append(paragraph)
-            # print(paragraph)
-        return paragraphs
+            documents[doc_i].page_content = paragraph
+
+        return paragraphs, documents
 
 
 def update_index_store():
@@ -246,7 +249,12 @@ def update_index_store():
     index.storage_context.persist(persist_dir="./storage_contexts/")
     print("Recipe size have been cut and vector store saved")
 
+def index_to_faiss():
+    paragraphs, documents = get_paragraphs()
+    embeddings = OllamaEmbeddings()
+    db = FAISS.from_documents(documents, embeddings)
+    db.save_local("recipe_qa")
 
 if __name__ == "__main__":
     download_dataset()
-    update_index_store()
+    index_to_faiss()
